@@ -1,10 +1,8 @@
 // products.js
-import products from "../data/products.json";
+import { getProducts, searchProducts } from '../services/api.js';
 import { setupSearch } from "../utils/search.js";
 
 console.log("Products.js loaded");
-console.log("Products data:", products);
-console.log("Total products:", products.length);
 
 const productContainer = document.querySelector("#productContainer");
 const productTemplate = document.querySelector("#productTemplate");
@@ -45,14 +43,9 @@ let currentProducts = [];
 let currentSort = 'default';
 let minPrice = 0;
 let maxPrice = Infinity;
-
-// Filter products by category
-const getProductsByCategory = () => {
-  if (selectedCategory && selectedCategory !== 'null') {
-    return products.filter(product => product.category === selectedCategory);
-  }
-  return products;
-};
+let currentPage = 1;
+let currentSearch = '';
+let totalPages = 1;
 
 // Update category title
 const updateCategoryTitle = () => {
@@ -63,7 +56,7 @@ const updateCategoryTitle = () => {
   }
 };
 
-// Sort products function
+// Sort products function (client-side sorting after fetching)
 const sortProducts = (productsToSort, sortType) => {
   const sorted = [...productsToSort];
   
@@ -83,87 +76,60 @@ const sortProducts = (productsToSort, sortType) => {
   }
 };
 
-// Filter by price
+// Filter by price (client-side)
 const filterByPrice = (productsToFilter) => {
   return productsToFilter.filter(product => 
     product.price >= minPrice && product.price <= maxPrice
   );
 };
 
-// Apply both sort and filter
-const applySortAndFilter = () => {
-  let filteredProducts = getProductsByCategory();
-  filteredProducts = filterByPrice(filteredProducts);
-  filteredProducts = sortProducts(filteredProducts, currentSort);
-  showFilteredProducts(filteredProducts);
-};
-
-// Setup sort and filter listeners
-const setupSortFilter = () => {
-  const sortSelect = document.getElementById('sortProducts');
-  const minPriceInput = document.getElementById('minPrice');
-  const maxPriceInput = document.getElementById('maxPrice');
-  const applyBtn = document.getElementById('applyPriceFilter');
-  const clearBtn = document.getElementById('clearFilter');
-  const activeFilters = document.getElementById('activeFilters');
-
-  if (sortSelect) {
-    sortSelect.addEventListener('change', (e) => {
-      currentSort = e.target.value;
-      applySortAndFilter();
-    });
-  }
-
-  if (applyBtn) {
-    applyBtn.addEventListener('click', () => {
-      minPrice = parseInt(minPriceInput.value) || 0;
-      maxPrice = parseInt(maxPriceInput.value) || Infinity;
-      applySortAndFilter();
-      updateActiveFilters();
-    });
-  }
-
-  if (clearBtn) {
-    clearBtn.addEventListener('click', () => {
-      minPriceInput.value = '';
-      maxPriceInput.value = '';
-      minPrice = 0;
-      maxPrice = Infinity;
-      currentSort = 'default';
-      if (sortSelect) sortSelect.value = 'default';
-      applySortAndFilter();
-      updateActiveFilters();
-    });
+// Fetch products from API
+const fetchProducts = async () => {
+  try {
+    console.log("Fetching products from API...");
+    
+    const params = {
+      page: currentPage,
+      category: selectedCategory || '',
+      search: currentSearch
+    };
+    
+    const data = await getProducts(params);
+    console.log("Products fetched:", data);
+    
+    currentProducts = data.products || [];
+    totalPages = data.pages || 1;
+    
+    // Update UI
+    if (productCount) {
+      productCount.textContent = `${data.total || 0} Product${data.total !== 1 ? 's' : ''}`;
+    }
+    
+    // Apply client-side filters and sorting
+    let filteredProducts = filterByPrice(currentProducts);
+    filteredProducts = sortProducts(filteredProducts, currentSort);
+    
+    renderProducts(filteredProducts);
+    
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    if (productContainer) {
+      productContainer.innerHTML = `
+        <div class="no-products">
+          <i class="fas fa-exclamation-circle"></i>
+          <h3>Error Loading Products</h3>
+          <p>Failed to load products. Please try again later.</p>
+          <button class="btn" onclick="location.reload()">Retry</button>
+        </div>
+      `;
+    }
   }
 };
 
-// Update active filters display
-const updateActiveFilters = () => {
-  const activeFilters = document.getElementById('activeFilters');
-  if (!activeFilters) return;
+// Render products to DOM
+const renderProducts = (productsToRender) => {
+  console.log("renderProducts called with", productsToRender.length, "products");
   
-  let filters = [];
-  if (minPrice > 0) filters.push(`Min: ₹${minPrice}`);
-  if (maxPrice < Infinity) filters.push(`Max: ₹${maxPrice}`);
-  
-  if (filters.length > 0) {
-    activeFilters.innerHTML = `
-      <span class="filter-label">Active Filters:</span>
-      ${filters.map(f => `<span class="filter-tag">${f}</span>`).join('')}
-    `;
-  } else {
-    activeFilters.innerHTML = '';
-  }
-};
-
-// Function to display products with DIRECT click handlers
-const showFilteredProducts = (productsToShow = null) => {
-  console.log("showFilteredProducts called");
-  
-  // Use provided products or get by category
-  currentProducts = productsToShow || getProductsByCategory();
-  
-  // Check if elements exist
   if (!productContainer) {
     console.error("Product container not found!");
     return;
@@ -179,13 +145,8 @@ const showFilteredProducts = (productsToShow = null) => {
   productContainer.innerHTML = '';
   console.log("Container cleared");
 
-  // Update product count
-  if (productCount) {
-    productCount.textContent = `${currentProducts.length} Product${currentProducts.length !== 1 ? 's' : ''}`;
-  }
-
   // Check if we have products
-  if (!currentProducts || currentProducts.length === 0) {
+  if (!productsToRender || productsToRender.length === 0) {
     console.log("No products found");
     productContainer.innerHTML = `
       <div class="no-products">
@@ -198,12 +159,12 @@ const showFilteredProducts = (productsToShow = null) => {
     return;
   }
 
-  console.log(`Rendering ${currentProducts.length} products`);
+  console.log(`Rendering ${productsToRender.length} products`);
 
-  currentProducts.forEach((curProd, index) => {
+  productsToRender.forEach((curProd, index) => {
     console.log(`Rendering product ${index + 1}:`, curProd.name);
     
-    const { id, name, category, brand, price, originalprice, description, image, stock, rating, reviewCount } = curProd;
+    const { id, name, category, brand, price, originalPrice, description, image, stock, rating, reviewCount } = curProd;
 
     // Clone the template
     const productClone = document.importNode(productTemplate.content, true);
@@ -241,16 +202,16 @@ const showFilteredProducts = (productsToShow = null) => {
     
     // Set prices
     const priceElem = productClone.querySelector(".productPrice");
-    if (priceElem) priceElem.textContent = `₹${price ? price.toLocaleString() : '0'}`;
+    if (priceElem) priceElem.textContent = `₹${price ? Number(price).toLocaleString() : '0'}`;
     
     const originalPriceElem = productClone.querySelector(".productActualPrice");
-    if (originalPriceElem && originalprice) {
-      originalPriceElem.textContent = `₹${originalprice.toLocaleString()}`;
+    if (originalPriceElem && originalPrice) {
+      originalPriceElem.textContent = `₹${Number(originalPrice).toLocaleString()}`;
     }
     
     // Calculate and set discount
-    if (originalprice && price && originalprice > price) {
-      const discount = Math.round(((originalprice - price) / originalprice) * 100);
+    if (originalPrice && price && originalPrice > price) {
+      const discount = Math.round(((originalPrice - price) / originalPrice) * 100);
       const discountElem = productClone.querySelector(".discount-badge");
       if (discountElem) {
         discountElem.textContent = `${discount}% OFF`;
@@ -317,14 +278,109 @@ const showFilteredProducts = (productsToShow = null) => {
   
   console.log("All products rendered");
   
-  // Double-check that cards have click handlers
-  setTimeout(() => {
-    const cards = document.querySelectorAll('.cards');
-    console.log(`✅ ${cards.length} cards rendered and should be clickable`);
-    cards.forEach(card => {
-      console.log(`Card ID: ${card.id} has click handler`);
+  // Add pagination controls if needed
+  if (totalPages > 1) {
+    addPaginationControls();
+  }
+};
+
+// Add pagination controls
+const addPaginationControls = () => {
+  const paginationDiv = document.createElement('div');
+  paginationDiv.className = 'pagination';
+  paginationDiv.style.cssText = 'display: flex; justify-content: center; gap: 1rem; margin-top: 2rem;';
+  
+  let paginationHTML = '';
+  
+  if (currentPage > 1) {
+    paginationHTML += `<button class="btn pagination-btn" data-page="${currentPage - 1}">Previous</button>`;
+  }
+  
+  paginationHTML += `<span style="padding: 1rem;">Page ${currentPage} of ${totalPages}</span>`;
+  
+  if (currentPage < totalPages) {
+    paginationHTML += `<button class="btn pagination-btn" data-page="${currentPage + 1}">Next</button>`;
+  }
+  
+  paginationDiv.innerHTML = paginationHTML;
+  productContainer.parentNode.appendChild(paginationDiv);
+  
+  // Add event listeners to pagination buttons
+  document.querySelectorAll('.pagination-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentPage = parseInt(btn.dataset.page);
+      fetchProducts();
+      
+      // Remove old pagination
+      const oldPagination = document.querySelector('.pagination');
+      if (oldPagination) oldPagination.remove();
     });
-  }, 500);
+  });
+};
+
+// Apply sort and filter then re-render
+const applySortAndFilter = () => {
+  let filteredProducts = filterByPrice(currentProducts);
+  filteredProducts = sortProducts(filteredProducts, currentSort);
+  renderProducts(filteredProducts);
+};
+
+// Setup sort and filter listeners
+const setupSortFilter = () => {
+  const sortSelect = document.getElementById('sortProducts');
+  const minPriceInput = document.getElementById('minPrice');
+  const maxPriceInput = document.getElementById('maxPrice');
+  const applyBtn = document.getElementById('applyPriceFilter');
+  const clearBtn = document.getElementById('clearFilter');
+  const activeFilters = document.getElementById('activeFilters');
+
+  if (sortSelect) {
+    sortSelect.addEventListener('change', (e) => {
+      currentSort = e.target.value;
+      applySortAndFilter();
+    });
+  }
+
+  if (applyBtn) {
+    applyBtn.addEventListener('click', () => {
+      minPrice = parseInt(minPriceInput.value) || 0;
+      maxPrice = parseInt(maxPriceInput.value) || Infinity;
+      applySortAndFilter();
+      updateActiveFilters();
+    });
+  }
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      minPriceInput.value = '';
+      maxPriceInput.value = '';
+      minPrice = 0;
+      maxPrice = Infinity;
+      currentSort = 'default';
+      if (sortSelect) sortSelect.value = 'default';
+      applySortAndFilter();
+      updateActiveFilters();
+    });
+  }
+};
+
+// Update active filters display
+const updateActiveFilters = () => {
+  const activeFilters = document.getElementById('activeFilters');
+  if (!activeFilters) return;
+  
+  let filters = [];
+  if (minPrice > 0) filters.push(`Min: ₹${minPrice}`);
+  if (maxPrice < Infinity) filters.push(`Max: ₹${maxPrice}`);
+  
+  if (filters.length > 0) {
+    activeFilters.innerHTML = `
+      <span class="filter-label">Active Filters:</span>
+      ${filters.map(f => `<span class="filter-tag">${f}</span>`).join('')}
+    `;
+  } else {
+    activeFilters.innerHTML = '';
+  }
 };
 
 // Import homeQuantityToggle and addToCart
@@ -336,16 +392,27 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log("DOM loaded, initializing products page");
   
   updateCategoryTitle();
-  showFilteredProducts();
+  fetchProducts(); // Fetch from API instead of using local data
   setupSortFilter();
   
-  if (document.getElementById('searchInput')) {
+  // Setup search
+  const searchInput = document.getElementById('searchInput');
+  const searchBtn = document.getElementById('searchBtn');
+  
+  if (searchInput && searchBtn) {
     console.log("Search elements found, setting up search");
-    setupSearch(products, (searchResults) => {
-      if (searchResults) {
-        showFilteredProducts(searchResults);
-      } else {
-        applySortAndFilter();
+    
+    searchBtn.addEventListener('click', async () => {
+      currentSearch = searchInput.value.trim();
+      currentPage = 1;
+      await fetchProducts();
+    });
+    
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        currentSearch = searchInput.value.trim();
+        currentPage = 1;
+        fetchProducts();
       }
     });
   } else {
