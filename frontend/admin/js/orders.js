@@ -1,7 +1,5 @@
-// admin/js/orders.js
 const API_URL = 'http://localhost:5000/api';
 
-// Check admin authentication
 const token = localStorage.getItem('token');
 const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -9,10 +7,8 @@ if (!token || !user.isAdmin) {
     window.location.href = 'index.html';
 }
 
-// Display admin info
 document.getElementById('adminEmail').textContent = user.email || '';
 
-// Logout functionality
 document.getElementById('logoutBtn').addEventListener('click', (e) => {
     e.preventDefault();
     localStorage.removeItem('token');
@@ -20,13 +16,11 @@ document.getElementById('logoutBtn').addEventListener('click', (e) => {
     window.location.href = 'index.html';
 });
 
-// State
 let allOrders = [];
 let filteredOrders = [];
 let currentPage = 1;
 const itemsPerPage = 10;
 
-// Load orders
 async function loadOrders() {
     try {
         const response = await fetch(`${API_URL}/admin/orders`, {
@@ -54,7 +48,6 @@ async function loadOrders() {
     }
 }
 
-// Update statistics
 function updateStats() {
     const total = allOrders.length;
     const pending = allOrders.filter(o => ['Processing', 'Confirmed', 'Shipped'].includes(o.status)).length;
@@ -69,7 +62,6 @@ function updateStats() {
     document.getElementById('totalRevenue').textContent = `₹${revenue.toLocaleString()}`;
 }
 
-// Display orders
 function displayOrders() {
     const container = document.getElementById('ordersContainer');
     
@@ -135,8 +127,7 @@ function displayPagination() {
     }
     
     let html = '<div style="display: flex; gap: 5px; justify-content: center; margin-top: 20px;">';
-    
-    // Previous button
+
     if (currentPage > 1) {
         html += `<button class="btn" onclick="changePage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
     }
@@ -150,8 +141,7 @@ function displayPagination() {
             html += `<span style="padding: 0 5px;">...</span>`;
         }
     }
-    
-    // Next button
+
     if (currentPage < totalPages) {
         html += `<button class="btn" onclick="changePage(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
     }
@@ -160,13 +150,11 @@ function displayPagination() {
     container.innerHTML = html;
 }
 
-// Change page
 window.changePage = (page) => {
     currentPage = page;
     displayOrders();
 };
 
-// Update order status
 window.updateOrderStatus = async (orderId, newStatus) => {
     try {
         const response = await fetch(`${API_URL}/admin/orders/${orderId}/status`, {
@@ -179,8 +167,7 @@ window.updateOrderStatus = async (orderId, newStatus) => {
         });
         
         if (!response.ok) throw new Error('Failed to update status');
-        
-        // Update local data
+
         const order = allOrders.find(o => o.id === orderId);
         if (order) order.status = newStatus;
         
@@ -190,11 +177,10 @@ window.updateOrderStatus = async (orderId, newStatus) => {
     } catch (error) {
         console.error('Error updating status:', error);
         showNotification('Failed to update status', 'error');
-        loadOrders(); // Reload to revert select
+        loadOrders(); 
     }
 };
 
-// View order details
 window.viewOrder = async (orderId) => {
     try {
         const response = await fetch(`${API_URL}/admin/orders/${orderId}`, {
@@ -318,7 +304,6 @@ function displayOrderDetails(order) {
     `;
 }
 
-// Print order
 window.printOrder = () => {
     const printContent = document.getElementById('orderDetails').innerHTML;
     const orderNumber = document.getElementById('orderNumberDisplay').textContent;
@@ -347,7 +332,6 @@ window.printOrder = () => {
     printWindow.print();
 };
 
-// Filter functionality
 document.getElementById('filterBtn').addEventListener('click', applyFilters);
 document.getElementById('resetBtn').addEventListener('click', resetFilters);
 
@@ -357,17 +341,15 @@ function applyFilters() {
     const date = document.getElementById('dateFilter').value;
     
     filteredOrders = allOrders.filter(order => {
-        // Search filter
+        
         const matchesSearch = !search || 
             (order.orderNumber && order.orderNumber.toLowerCase().includes(search)) ||
             (order.email && order.email.toLowerCase().includes(search)) ||
             (order.firstName && order.firstName.toLowerCase().includes(search)) ||
             (order.lastName && order.lastName.toLowerCase().includes(search));
-        
-        // Status filter
+
         const matchesStatus = !status || order.status === status;
-        
-        // Date filter
+
         let matchesDate = true;
         if (date) {
             const orderDate = new Date(order.createdAt);
@@ -400,7 +382,6 @@ function resetFilters() {
     displayOrders();
 }
 
-// Modal functions
 window.openOrderModal = () => {
     document.getElementById('orderModal').classList.add('active');
 };
@@ -409,7 +390,6 @@ window.closeOrderModal = () => {
     document.getElementById('orderModal').classList.remove('active');
 };
 
-// Helper functions
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -445,5 +425,4 @@ function showNotification(message, type) {
     }, 3000);
 }
 
-// Initialize
 document.addEventListener('DOMContentLoaded', loadOrders);

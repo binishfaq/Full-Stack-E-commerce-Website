@@ -1,4 +1,3 @@
-// Categories.js - DEBUG VERSION
 console.log("🔴 Categories.js file is LOADED");
 
 const categoriesContainer = document.querySelector("#categoriesContainer");
@@ -7,7 +6,6 @@ const categoriesTemplate = document.querySelector("#categoriesTemplate");
 console.log("🔴 Container element:", categoriesContainer);
 console.log("🔴 Template element:", categoriesTemplate);
 
-// Fetch categories from database
 export const showCategories = async () => {
   console.log("🔵 showCategories function CALLED");
   
@@ -36,7 +34,6 @@ export const showCategories = async () => {
       return;
     }
 
-    // Clear container first
     console.log("🟡 Clearing container");
     categoriesContainer.innerHTML = '';
     console.log("🟡 Container cleared, current children:", categoriesContainer.children.length);
@@ -72,8 +69,7 @@ export const showCategories = async () => {
         descElem.textContent = category.description || `Shop our ${category.name} collection`;
         console.log(`   ✅ Description set`);
       }
-      
-      // Add click event
+
       card.addEventListener("click", () => {
         console.log(`   👆 Clicked on ${category.name}`);
         window.location.href = `products.html?category=${category.name}`;
@@ -91,8 +87,7 @@ export const showCategories = async () => {
   }
 };
 
-// Fallback function
 const loadLocalCategories = () => {
   console.log("Loading categories from local JSON file...");
-  // ... rest of your fallback code
+  
 };

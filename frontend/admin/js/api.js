@@ -1,4 +1,3 @@
-// admin/js/api.js
 const API_URL = 'http://localhost:5000/api';
 
 export function getToken() {
@@ -47,8 +46,7 @@ export async function apiRequest(endpoint, options = {}) {
         });
         
         clearTimeout(timeoutId);
-        
-        // Handle 401/403 - redirect to login
+
         if (response.status === 401 || response.status === 403) {
             logout();
             throw new Error('Session expired. Please login again.');

@@ -2,7 +2,7 @@
 import { getProducts, searchProducts } from '../services/api.js';
 import { setupSearch } from "../utils/search.js";
 import { homeQuantityToggle } from "../utils/homeQuantityToggle.js";
-import { addToCart } from "../utils/addToCart.js";
+import { addToCart } from"../utils/addToCart.js";
 
 console.log("Products.js loaded");
 

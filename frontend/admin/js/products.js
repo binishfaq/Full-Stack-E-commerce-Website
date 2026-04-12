@@ -1,7 +1,5 @@
-// admin/js/products.js
 const API_URL = 'http://localhost:5000/api';
 
-// Check admin authentication
 const token = localStorage.getItem('token');
 const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -9,10 +7,8 @@ if (!token || !user.isAdmin) {
     window.location.href = 'index.html';
 }
 
-// Display admin info
 document.getElementById('adminEmail').textContent = user.email || '';
 
-// Logout functionality
 document.getElementById('logoutBtn').addEventListener('click', (e) => {
     e.preventDefault();
     localStorage.removeItem('token');
@@ -20,12 +16,10 @@ document.getElementById('logoutBtn').addEventListener('click', (e) => {
     window.location.href = 'index.html';
 });
 
-// State
 let currentPage = 1;
 let currentSearch = '';
 let currentCategory = '';
 
-// Fetch products
 async function loadProducts() {
     const container = document.getElementById('productsContainer');
     
@@ -121,13 +115,11 @@ function displayPagination(data) {
     container.innerHTML = html;
 }
 
-// Change page
 window.changePage = (page) => {
     currentPage = page;
     loadProducts();
 };
 
-// Search functionality
 document.getElementById('searchBtn').addEventListener('click', () => {
     currentSearch = document.getElementById('searchInput').value;
     currentPage = 1;
@@ -142,14 +134,12 @@ document.getElementById('searchInput').addEventListener('keypress', (e) => {
     }
 });
 
-// Category filter
 document.getElementById('categoryFilter').addEventListener('change', (e) => {
     currentCategory = e.target.value;
     currentPage = 1;
     loadProducts();
 });
 
-// Modal functions
 window.openModal = () => {
     document.getElementById('productModal').classList.add('active');
 };
@@ -161,10 +151,8 @@ window.closeModal = () => {
     document.getElementById('modalTitle').textContent = 'Add New Product';
 };
 
-// Add product button
 document.getElementById('addProductBtn').addEventListener('click', openModal);
 
-// Edit product
 window.editProduct = async (id) => {
     try {
         const response = await fetch(`${API_URL}/products/${id}`, {
@@ -193,7 +181,6 @@ window.editProduct = async (id) => {
     }
 };
 
-// Delete product
 window.deleteProduct = async (id) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
     
@@ -216,7 +203,6 @@ window.deleteProduct = async (id) => {
     }
 };
 
-// Save product
 document.getElementById('productForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -269,5 +255,4 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
     }
 });
 
-// Initialize
 document.addEventListener('DOMContentLoaded', loadProducts);

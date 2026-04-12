@@ -1,7 +1,5 @@
-// admin/js/admin-auth.js
 const API_URL = 'http://localhost:5000/api';
 
-// Check if already logged in as admin
 function checkExistingSession() {
     try {
         const token = localStorage.getItem('token');
@@ -12,16 +10,14 @@ function checkExistingSession() {
         }
     } catch (error) {
         console.error('Error checking session:', error);
-        // Clear corrupted localStorage
+        
         localStorage.removeItem('token');
         localStorage.removeItem('user');
     }
 }
 
-// Run check
 checkExistingSession();
 
-// Form validation
 function validateForm(email, password) {
     const errors = [];
     
@@ -40,7 +36,6 @@ function validateForm(email, password) {
     return errors;
 }
 
-// Show loading state
 function setLoading(isLoading) {
     const loginBtn = document.getElementById('loginBtn');
     
@@ -53,12 +48,10 @@ function setLoading(isLoading) {
     }
 }
 
-// Show message with proper escaping
 function showMessage(message, type = 'error') {
     const messageDiv = document.getElementById('loginMessage');
     const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
-    
-    // Escape HTML to prevent XSS
+
     const escapedMessage = message
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -121,20 +114,17 @@ document.getElementById('adminLoginForm').addEventListener('submit', async (e) =
         if (!response.ok) {
             throw new Error(data.message || 'Login failed. Please check your credentials.');
         }
-        
-        // Validate response data
+
         if (!data.user || !data.token) {
             throw new Error('Invalid response from server');
         }
-        
-        // Check if user is admin
+
         if (!data.user.isAdmin) {
             showMessage('Access denied. Admin privileges required.', 'error');
             setLoading(false);
             return;
         }
-        
-        // Store token and user data
+
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify({
             id: data.user.id,
@@ -143,11 +133,9 @@ document.getElementById('adminLoginForm').addEventListener('submit', async (e) =
             email: data.user.email,
             isAdmin: data.user.isAdmin
         }));
-        
-        // Show success message
+
         showMessage('Login successful! Redirecting...', 'success');
-        
-        // Redirect after short delay
+
         setTimeout(() => {
             window.location.href = 'dashboard.html';
         }, 1000);
@@ -168,7 +156,6 @@ document.getElementById('adminLoginForm').addEventListener('submit', async (e) =
     }
 });
 
-// Clear messages on input
 document.getElementById('email').addEventListener('input', () => {
     document.getElementById('loginMessage').innerHTML = '';
 });

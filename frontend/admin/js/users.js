@@ -1,7 +1,5 @@
-// admin/js/users.js
 const API_URL = 'http://localhost:5000/api';
 
-// Check admin authentication
 const token = localStorage.getItem('token');
 const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -9,10 +7,8 @@ if (!token || !user.isAdmin) {
     window.location.href = 'index.html';
 }
 
-// Display admin info
 document.getElementById('adminEmail').textContent = user.email || '';
 
-// Logout functionality
 document.getElementById('logoutBtn').addEventListener('click', (e) => {
     e.preventDefault();
     localStorage.removeItem('token');
@@ -20,13 +16,11 @@ document.getElementById('logoutBtn').addEventListener('click', (e) => {
     window.location.href = 'index.html';
 });
 
-// State
 let allUsers = [];
 let filteredUsers = [];
 let currentPage = 1;
 const itemsPerPage = 10;
 
-// Load users
 async function loadUsers() {
     try {
         const response = await fetch(`${API_URL}/admin/users`, {
@@ -54,10 +48,9 @@ async function loadUsers() {
     }
 }
 
-// Update statistics
 function updateStats() {
     const total = allUsers.length;
-    const active = allUsers.length; // You can add logic for active/inactive if needed
+    const active = allUsers.length; 
     const admins = allUsers.filter(u => u.isAdmin).length;
     
     document.getElementById('totalUsers').textContent = total;
@@ -65,7 +58,6 @@ function updateStats() {
     document.getElementById('adminUsers').textContent = admins;
 }
 
-// Display users
 function displayUsers() {
     const container = document.getElementById('usersContainer');
     
@@ -141,13 +133,11 @@ function displayPagination() {
     container.innerHTML = html;
 }
 
-// Change page
 window.changePage = (page) => {
     currentPage = page;
     displayUsers();
 };
 
-// Toggle admin status
 window.toggleAdmin = async (userId, makeAdmin) => {
     if (!confirm(`Are you sure you want to ${makeAdmin ? 'make this user an admin' : 'remove admin privileges'}?`)) return;
     
@@ -162,7 +152,7 @@ window.toggleAdmin = async (userId, makeAdmin) => {
         if (!response.ok) throw new Error('Failed to update user');
         
         showNotification(`User ${makeAdmin ? 'promoted to admin' : 'removed from admin'}`, 'success');
-        loadUsers(); // Reload users
+        loadUsers(); 
         
     } catch (error) {
         console.error('Error toggling admin:', error);
@@ -170,7 +160,6 @@ window.toggleAdmin = async (userId, makeAdmin) => {
     }
 };
 
-// Delete user
 window.deleteUser = async (userId) => {
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
     
@@ -188,7 +177,7 @@ window.deleteUser = async (userId) => {
         }
         
         showNotification('User deleted successfully', 'success');
-        loadUsers(); // Reload users
+        loadUsers(); 
         
     } catch (error) {
         console.error('Error deleting user:', error);
@@ -196,7 +185,6 @@ window.deleteUser = async (userId) => {
     }
 };
 
-// Search functionality
 document.getElementById('searchBtn').addEventListener('click', applySearch);
 document.getElementById('resetBtn').addEventListener('click', resetSearch);
 
@@ -228,7 +216,6 @@ function resetSearch() {
     displayUsers();
 }
 
-// Helper function for notifications
 function showNotification(message, type) {
     const notification = document.createElement('div');
     notification.className = `alert alert-${type}`;
@@ -246,5 +233,4 @@ function showNotification(message, type) {
     }, 3000);
 }
 
-// Initialize
 document.addEventListener('DOMContentLoaded', loadUsers);

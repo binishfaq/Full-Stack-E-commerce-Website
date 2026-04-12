@@ -95,7 +95,6 @@ if (footerElem) {
   footerElem.innerHTML = footerHTML;
 }
 
-// Simple notification function (add this to your main.js or keep in footer)
 window.showNotification = function(message, type = 'info') {
   const toast = document.createElement("div");
   toast.classList.add("toast");

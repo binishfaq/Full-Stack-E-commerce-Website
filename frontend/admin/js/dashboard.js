@@ -1,16 +1,12 @@
-// admin/js/dashboard.js
 const API_URL = 'http://localhost:5000/api';
 
-// State
 let dashboardData = null;
 let refreshInterval = null;
 
-// Get auth token
 function getToken() {
     return localStorage.getItem('token');
 }
 
-// Check admin authentication
 function checkAuth() {
     const token = getToken();
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -19,15 +15,13 @@ function checkAuth() {
         window.location.href = 'index.html';
         return false;
     }
-    
-    // Display admin info
+
     document.getElementById('adminName').textContent = user.firstName || 'Admin';
     document.getElementById('adminEmail').textContent = user.email || '';
     
     return true;
 }
 
-// Show loading state
 function showLoading(containerId, message = 'Loading...') {
     const container = document.getElementById(containerId);
     if (container) {
@@ -40,7 +34,6 @@ function showLoading(containerId, message = 'Loading...') {
     }
 }
 
-// Show error state
 function showError(containerId, message) {
     const container = document.getElementById(containerId);
     if (container) {
@@ -53,12 +46,10 @@ function showError(containerId, message) {
     }
 }
 
-// Fetch dashboard stats
 async function loadDashboard() {
-    // Check auth first
-    if (!checkAuth()) return;
     
-    // Show loading states
+    if (!checkAuth()) return;
+
     showLoading('statsContainer', 'Loading statistics...');
     showLoading('recentOrders', 'Loading orders...');
     showLoading('lowStock', 'Checking stock levels...');
@@ -79,7 +70,7 @@ async function loadDashboard() {
         clearTimeout(timeoutId);
         
         if (response.status === 401 || response.status === 403) {
-            // Token expired or not admin
+            
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = 'index.html';
@@ -174,8 +165,7 @@ function displayRecentOrders(orders) {
     orders.slice(0, 5).forEach(order => {
         const date = order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A';
         const statusClass = getStatusClass(order.status);
-        
-        // Escape values to prevent XSS
+
         const orderNumber = escapeHtml(order.orderNumber || order.id || 'N/A');
         const email = escapeHtml(order.email || 'N/A');
         const total = Number(order.total || 0).toLocaleString();
@@ -215,8 +205,7 @@ function displayLowStock(products) {
         const stock = Number(product.stock || 0);
         const stockStatus = stock <= 0 ? 'Out of Stock' : stock < 5 ? 'Critical' : 'Low';
         const statusClass = stock <= 0 ? 'status-inactive' : stock < 5 ? 'status-processing' : 'status-warning';
-        
-        // Escape values
+
         const name = escapeHtml(product.name || 'Unknown Product');
         
         html += `
@@ -237,7 +226,6 @@ function displayLowStock(products) {
     container.innerHTML = html;
 }
 
-// Helper function to escape HTML
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -259,7 +247,6 @@ function getStatusClass(status) {
     return statusMap[status] || '';
 }
 
-// Logout functionality
 document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
     e.preventDefault();
     localStorage.removeItem('token');
@@ -267,7 +254,6 @@ document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
     window.location.href = 'index.html';
 });
 
-// Auto-refresh dashboard every 30 seconds
 function startAutoRefresh() {
     if (refreshInterval) {
         clearInterval(refreshInterval);
@@ -275,14 +261,12 @@ function startAutoRefresh() {
     refreshInterval = setInterval(loadDashboard, 30000);
 }
 
-// Stop auto-refresh when leaving page
 window.addEventListener('beforeunload', () => {
     if (refreshInterval) {
         clearInterval(refreshInterval);
     }
 });
 
-// Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadDashboard();
     startAutoRefresh();

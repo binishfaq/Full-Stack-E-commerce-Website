@@ -7,13 +7,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/admin.css">
     <style>
-        /* Make category select scrollable */
+        
         select[multiple] {
             height: auto;
             min-height: 200px;
         }
-        
-        /* Better option styling */
+
         select optgroup {
             font-weight: 600;
             color: var(--primary);
@@ -22,8 +21,7 @@
         select option {
             padding: 5px 10px;
         }
-        
-        /* Optional: Add icons to options */
+
         .category-option {
             display: flex;
             align-items: center;
@@ -32,7 +30,7 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
+    
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>Ease<span>Shop</span></h2>
@@ -60,8 +58,7 @@
             </a>
         </div>
     </div>
-    
-    <!-- Main Content -->
+
     <div class="main-content">
         <div class="top-bar">
             <div class="page-title">
@@ -74,8 +71,7 @@
                 <i class="fas fa-user-circle"></i>
             </div>
         </div>
-        
-        <!-- Products Header -->
+
         <div class="card">
             <div class="card-header">
                 <h2><i class="fas fa-box"></i> All Products</h2>
@@ -83,8 +79,7 @@
                     <i class="fas fa-plus"></i> Add New Product
                 </button>
             </div>
-            
-            <!-- Search and Filter -->
+
             <div style="margin-bottom: 20px; display: flex; gap: 10px;">
                 <input type="text" id="searchInput" class="form-control" 
                        placeholder="Search products..." style="max-width: 300px;">
@@ -107,21 +102,18 @@
                     <i class="fas fa-search"></i> Search
                 </button>
             </div>
-            
-            <!-- Products Table -->
+
             <div class="table-responsive" id="productsContainer">
                 <div class="loading">
                     <i class="fas fa-spinner fa-spin"></i>
                     <p>Loading products...</p>
                 </div>
             </div>
-            
-            <!-- Pagination -->
+
             <div id="pagination" style="margin-top: 20px; text-align: center;"></div>
         </div>
     </div>
-    
-    <!-- Add/Edit Product Modal -->
+
     <div id="productModal" class="modal">
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
@@ -147,8 +139,7 @@
                         <label for="productCategory">Category *</label>
                         <select id="productCategory" class="form-control" required>
                             <option value="">Select Category</option>
-                            
-                            <!-- Electronics & Tech -->
+
                             <optgroup label="📱 Electronics & Tech">
                                 <option value="electronics">📱 Electronics</option>
                                 <option value="phones">📱 Mobile Phones</option>
@@ -159,8 +150,7 @@
                                 <option value="wearables">⌚ Wearables</option>
                                 <option value="accessories">🔌 Accessories</option>
                             </optgroup>
-                            
-                            <!-- Fashion -->
+
                             <optgroup label="👕 Fashion">
                                 <option value="clothing">👕 Clothing</option>
                                 <option value="men">👔 Men's Fashion</option>
@@ -172,8 +162,7 @@
                                 <option value="bags">👜 Bags</option>
                                 <option value="sunglasses">🕶️ Sunglasses</option>
                             </optgroup>
-                            
-                            <!-- Home & Living -->
+
                             <optgroup label="🏠 Home & Living">
                                 <option value="furniture">🪑 Furniture</option>
                                 <option value="home">🏠 Home Decor</option>
@@ -183,8 +172,7 @@
                                 <option value="bath">🛁 Bath</option>
                                 <option value="bedding">🛏️ Bedding</option>
                             </optgroup>
-                            
-                            <!-- Sports & Outdoors -->
+
                             <optgroup label="⚽ Sports & Outdoors">
                                 <option value="sports">⚽ Sports</option>
                                 <option value="gym">💪 Gym & Fitness</option>
@@ -192,8 +180,7 @@
                                 <option value="cycling">🚲 Cycling</option>
                                 <option value="outdoor">🌲 Outdoor</option>
                             </optgroup>
-                            
-                            <!-- Books & Media -->
+
                             <optgroup label="📚 Books & Media">
                                 <option value="books">📚 Books</option>
                                 <option value="ebooks">📱 eBooks</option>
@@ -203,8 +190,7 @@
                                 <option value="movies">🎬 Movies</option>
                                 <option value="gaming">🎮 Gaming</option>
                             </optgroup>
-                            
-                            <!-- Beauty & Health -->
+
                             <optgroup label="💄 Beauty & Health">
                                 <option value="beauty">💄 Beauty</option>
                                 <option value="skincare">🧴 Skincare</option>
@@ -214,31 +200,27 @@
                                 <option value="wellness">🧘 Wellness</option>
                                 <option value="personal-care">🚿 Personal Care</option>
                             </optgroup>
-                            
-                            <!-- Groceries & Essentials -->
+
                             <optgroup label="🥑 Groceries & Essentials">
                                 <option value="groceries">🥑 Groceries</option>
                                 <option value="beverages">🥤 Beverages</option>
                                 <option value="snacks">🍪 Snacks</option>
                                 <option value="organic">🌱 Organic</option>
                             </optgroup>
-                            
-                            <!-- Automotive -->
+
                             <optgroup label="🚗 Automotive">
                                 <option value="automotive">🚗 Automotive</option>
                                 <option value="car-parts">🔧 Car Parts</option>
                                 <option value="car-accessories">🎨 Car Accessories</option>
                                 <option value="motorcycle">🏍️ Motorcycle</option>
                             </optgroup>
-                            
-                            <!-- Kids & Baby -->
+
                             <optgroup label="🧸 Kids & Baby">
                                 <option value="baby">🍼 Baby Products</option>
                                 <option value="toys">🧸 Toys</option>
                                 <option value="kids-furniture">🪑 Kids Furniture</option>
                             </optgroup>
-                            
-                            <!-- Pet Supplies -->
+
                             <optgroup label="🐶 Pet Supplies">
                                 <option value="pet">🐶 Pet Supplies</option>
                                 <option value="dog">🐕 Dogs</option>
@@ -246,15 +228,13 @@
                                 <option value="fish">🐠 Fish</option>
                                 <option value="bird">🦜 Birds</option>
                             </optgroup>
-                            
-                            <!-- Office & Stationery -->
+
                             <optgroup label="📎 Office & Stationery">
                                 <option value="office">📎 Office Supplies</option>
                                 <option value="stationery">✏️ Stationery</option>
                                 <option value="art">🎨 Art Supplies</option>
                             </optgroup>
-                            
-                            <!-- Special Categories -->
+
                             <optgroup label="🎁 Special Categories">
                                 <option value="handmade">🤲 Handmade</option>
                                 <option value="eco-friendly">🌿 Eco-Friendly</option>
