@@ -1,59 +1,152 @@
 version: '3.8'
 
 services:
+  # MySQL Database
   mysql:
-    image: mysql:8
+    image: mysql:8.0
     container_name: easeshop-mysql
-    restart: always
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: ""          # empty password (change as needed)
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: easeshop
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql   # optional, if you have schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 5
     networks:
-      - easeshop-network
+      - easeshop-net
 
-  backend:
-    build: ./backend
-    container_name: easeshop-backend
-    restart: always
-    ports:
-      - "5000:5000"
-    depends_on:
-      - mysql
+  # Auth Service
+  auth:
+    build: ./services/auth
+    container_name: easeshop-auth
+    restart: unless-stopped
     environment:
+      PORT: 3001
       DB_HOST: mysql
       DB_USER: root
-      DB_PASSWORD: rootpassword
+      DB_PASSWORD: ""
       DB_NAME: easeshop
       JWT_SECRET: easeshop_super_secret_key_2026
-      ADMIN_SECRET_KEY: admin123
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    networks:
-      - easeshop-network
-
-  frontend:
-    build: ./frontend
-    container_name: easeshop-frontend
-    restart: always
+      ADMIN_SECRET_KEY: admin_create_secret_2026
     ports:
-      - "5173:5173"
+      - "3001:3001"
     depends_on:
-      - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      mysql:
+        condition: service_healthy
     networks:
-      - easeshop-network
+      - easeshop-net
+
+  # Product Service
+  product:
+    build: ./services/product
+    container_name: easeshop-product
+    restart: unless-stopped
+    environment:
+      PORT: 3002
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: ""
+      DB_NAME: easeshop
+      JWT_SECRET: easeshop_super_secret_key_2026
+    ports:
+      - "3002:3002"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - easeshop-net
+
+  # Order Service
+  order:
+    build: ./services/order
+    container_name: easeshop-order
+    restart: unless-stopped
+    environment:
+      PORT: 3003
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: ""
+      DB_NAME: easeshop
+      JWT_SECRET: easeshop_super_secret_key_2026
+      PRODUCT_SERVICE_URL: http://product:3002
+    ports:
+      - "3003:3003"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      product:
+        condition: service_started
+    networks:
+      - easeshop-net
+
+  # User Service
+  user:
+    build: ./services/user
+    container_name: easeshop-user
+    restart: unless-stopped
+    environment:
+      PORT: 3004
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: ""
+      DB_NAME: easeshop
+      JWT_SECRET: easeshop_super_secret_key_2026
+    ports:
+      - "3004:3004"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - easeshop-net
+
+  # Admin Service
+  admin:
+    build: ./services/admin
+    container_name: easeshop-admin
+    restart: unless-stopped
+    environment:
+      PORT: 3005
+      JWT_SECRET: easeshop_super_secret_key_2026
+      PRODUCT_SERVICE_URL: http://product:3002
+      ORDER_SERVICE_URL: http://order:3003
+      USER_SERVICE_URL: http://user:3004
+    ports:
+      - "3005:3005"
+    depends_on:
+      - product
+      - order
+      - user
+    networks:
+      - easeshop-net
+
+  # API Gateway
+  gateway:
+    build: ./gateway
+    container_name: easeshop-gateway
+    restart: unless-stopped
+    environment:
+      PORT: 5000
+    ports:
+      - "5000:5000"     # frontend will use localhost:5000
+    depends_on:
+      - auth
+      - product
+      - order
+      - user
+      - admin
+    networks:
+      - easeshop-net
+
+networks:
+  easeshop-net:
+    driver: bridge
 
 volumes:
   mysql_data:
-
-networks:
-  easeshop-network:
-    driver: bridge

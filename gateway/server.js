@@ -35,7 +35,8 @@ app.use('/api/categories', createProxy(3002));
 // Admin list endpoints (must be BEFORE any generic /api/admin)
 app.use('/api/admin/products', createProxy(3002));
 app.use('/api/admin/users', createProxy(3004));
-app.use('/api/admin/orders', createProxy(3003));
+app.use('/api/orders', createProxy(3003));           
+app.use('/api/orders/myorders', createProxy(3003));   
 
 // Admin dashboard and charts
 app.use('/api/admin/dashboard', createProxy(3005));

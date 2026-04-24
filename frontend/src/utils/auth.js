@@ -1,6 +1,6 @@
-// auth.js – Backend API authentication with JWT
+// frontend/src/utils/auth.js – Backend API authentication with JWT
 
-const API_URL = 'http://localhost:5000/api'; // Changed this to base API URL
+const API_URL = 'http://localhost:5000/api'; // ✅ MUST include /api
 const AUTH_URL = `${API_URL}/auth`;
 
 // ========== HELPER FUNCTIONS ==========
@@ -262,9 +262,8 @@ export async function saveOrder(orderData) {
       return { success: false, message: 'Not logged in' };
     }
 
-    console.log('Saving order:', orderData); // Debug log
+    console.log('Saving order:', orderData);
 
-    // Format the order data for your backend
     const apiOrderData = {
       items: orderData.items.map(item => ({
         productId: item.productId || item.id,
@@ -283,9 +282,9 @@ export async function saveOrder(orderData) {
       notes: orderData.notes || ''
     };
 
-    console.log('API Request:', apiOrderData); // Debug log
+    console.log('API Request:', apiOrderData);
 
-    const response = await fetch(`${API_URL}/orders`, { // Using API_URL here
+    const response = await fetch(`${API_URL}/orders`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -294,8 +293,16 @@ export async function saveOrder(orderData) {
       body: JSON.stringify(apiOrderData)
     });
 
+    // Check if response is JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error('Non-JSON response:', text);
+      throw new Error(`Server returned ${response.status}: ${text.substring(0, 100)}`);
+    }
+
     const data = await response.json();
-    console.log('API Response:', data); // Debug log
+    console.log('API Response:', data);
 
     if (!response.ok) {
       return { 
