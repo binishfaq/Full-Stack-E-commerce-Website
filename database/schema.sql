@@ -91,6 +91,3 @@ INSERT IGNORE INTO categories (name, description) VALUES
 ('toys', 'Fun for all ages'),
 ('automotive', 'Everything for your vehicle'),
 ('furniture', 'Comfort for your home');
-
--- Insert sample products (optional – you already have products)
--- (Add your own product inserts here if needed)
